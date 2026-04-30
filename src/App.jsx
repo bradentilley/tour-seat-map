@@ -154,7 +154,7 @@ function BookingModal({ seat, booking, onBook, onCancel, onClose }) {
               <div style={{ fontSize: '0.9rem', color: '#e8e4d9', fontWeight: 600, marginBottom: 3 }}>{booking.guest_name}</div>
               <div style={{ fontSize: '0.65rem', color: '#a0aab8', marginBottom: 10 }}>{booking.guest_email}</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.55rem', color: '#6b7280' }}>
-                <span>Sold by <span style={{ color: '#c9a84c' }}>{booking.sold_by}</span></span>
+                <span>Sold by <span style={{ color: '#c9a84c' }}>{booking.salesperson}</span></span>
                 <span>{new Date(booking.created_at).toLocaleDateString()}</span>
               </div>
             </div>
@@ -412,7 +412,7 @@ export default function App() {
       tour_id: selectedTour.id, bus_number: activeBus,
       row_number: row, seat_letter: col,
       guest_name: name, guest_email: email,
-      sold_by: soldBy, status: 'active',
+      salesperson: soldBy, status: 'active',
     });
     if (error) {
       if (error.code === '23505') return { error: 'This seat was just booked by someone else. Please choose another.' };
