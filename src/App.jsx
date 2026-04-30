@@ -416,7 +416,7 @@ export default function App() {
     });
     if (error) {
       if (error.code === '23505') return { error: 'This seat was just booked by someone else. Please choose another.' };
-      return { error: 'Booking failed — please try again.' };
+      return { error: `Booking failed: ${error.message} (${error.code})` };
     }
     setSelectedSeat(null);
     return { success: true };
