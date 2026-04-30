@@ -59,7 +59,7 @@ function Seat({ row, col, booking, onClick }) {
 // ── Bus Map ───────────────────────────────────────────────────────────────────
 function BusMap({ bookings, onSeatClick }) {
   const bookingMap = {};
-  bookings.forEach(b => { bookingMap[`${b.seat_row}${b.seat_col}`] = b; });
+  bookings.forEach(b => { bookingMap[`${b.row_number}${b.seat_letter}`] = b; });
 
   return (
     <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -215,8 +215,8 @@ function BookingModal({ seat, booking, onBook, onCancel, onClose }) {
 // ── Bus View ──────────────────────────────────────────────────────────────────
 function BusView({ tour, bookings, activeBus, setActiveBus, onBack, onSeatClick }) {
   const busBookings    = bookings.filter(b => b.bus_number === activeBus);
-  const premiumBooked  = busBookings.filter(b => b.seat_row <= 3).length;
-  const revenue        = busBookings.filter(b => b.seat_row <= 3).reduce((s, b) => s + TIER[b.seat_row].price, 0);
+  const premiumBooked  = busBookings.filter(b => b.row_number <= 3).length;
+  const revenue        = busBookings.filter(b => b.row_number <= 3).reduce((s, b) => s + TIER[b.row_number].price, 0);
 
   return (
     <div style={{ minHeight: '100vh', padding: '24px 24px 56px' }}>
@@ -235,7 +235,7 @@ function BusView({ tour, bookings, activeBus, setActiveBus, onBack, onSeatClick 
 
         {/* Bus tabs */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          {[1, ...(tour.has_bus_2 ? [2] : [])].map(bus => (
+          {[1, ...(tour.has_bus2 ? [2] : [])].map(bus => (
             <button key={bus} onClick={() => setActiveBus(bus)}
               style={{ padding: '8px 22px', background: activeBus === bus ? 'rgba(201,168,76,0.15)' : 'transparent', border: `1px solid ${activeBus === bus ? 'rgba(201,168,76,0.5)' : '#252a35'}`, borderRadius: 8, color: activeBus === bus ? '#c9a84c' : '#6b7280', fontSize: '0.65rem', cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase', transition: 'all 0.12s' }}>
               Bus {bus}
@@ -324,15 +324,15 @@ function TourList({ tours, onSelectTour, onCreateTour, onToggleBus2 }) {
                   {tour.name}
                 </div>
                 <div style={{ fontSize: '0.56rem', color: '#6b7280', letterSpacing: '1px' }}>
-                  {tour.has_bus_2 ? '2 buses · 24 premium seats' : '1 bus · 12 premium seats'}
+                  {tour.has_bus2 ? '2 buses · 24 premium seats' : '1 bus · 12 premium seats'}
                 </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
                 <span style={{ fontSize: '0.55rem', color: '#6b7280' }}>Bus 2</span>
                 <div onClick={() => onToggleBus2(tour)}
-                  style={{ width: 36, height: 20, borderRadius: 10, background: tour.has_bus_2 ? '#c9a84c' : '#252a35', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
-                  <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'white', position: 'absolute', top: 3, left: tour.has_bus_2 ? 19 : 3, transition: 'left 0.2s' }} />
+                  style={{ width: 36, height: 20, borderRadius: 10, background: tour.has_bus2 ? '#c9a84c' : '#252a35', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                  <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'white', position: 'absolute', top: 3, left: tour.has_bus2 ? 19 : 3, transition: 'left 0.2s' }} />
                 </div>
               </div>
 
@@ -384,12 +384,14 @@ export default function App() {
   }, [selectedTour]);
 
   async function handleCreateTour(name) {
-    const { data } = await supabase.from('tours').insert({ name }).select().single();
+    const { data, error } = await supabase.from('tours').insert({ name }).select().single();
+    if (error) { console.error('Create tour failed:', error); return; }
     if (data) setTours(prev => [...prev, data]);
   }
 
   async function handleToggleBus2(tour) {
-    const { data } = await supabase.from('tours').update({ has_bus_2: !tour.has_bus_2 }).eq('id', tour.id).select().single();
+    const { data, error } = await supabase.from('tours').update({ has_bus2: !tour.has_bus2 }).eq('id', tour.id).select().single();
+    if (error) { console.error('Toggle bus2 failed:', error); return; }
     if (data) {
       setTours(prev => prev.map(t => t.id === tour.id ? data : t));
       if (selectedTour?.id === tour.id) setSelectedTour(data);
@@ -400,7 +402,7 @@ export default function App() {
     const { row, col } = selectedSeat;
     const { error } = await supabase.from('bookings').insert({
       tour_id: selectedTour.id, bus_number: activeBus,
-      seat_row: row, seat_col: col,
+      row_number: row, seat_letter: col,
       guest_name: name, guest_email: email,
       sold_by: soldBy, status: 'active',
     });
@@ -418,7 +420,7 @@ export default function App() {
   }
 
   const selectedSeatBooking = selectedSeat
-    ? bookings.find(b => b.seat_row === selectedSeat.row && b.seat_col === selectedSeat.col && b.bus_number === activeBus)
+    ? bookings.find(b => b.row_number === selectedSeat.row && b.seat_letter === selectedSeat.col && b.bus_number === activeBus)
     : null;
 
   if (appLoading) {
