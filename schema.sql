@@ -12,7 +12,7 @@ create table if not exists bookings (
   id uuid primary key default gen_random_uuid(),
   tour_id uuid not null references tours(id) on delete cascade,
   bus_number smallint not null check (bus_number in (1, 2)),
-  row_number smallint not null check (row_number between 1 and 3),
+  row_number smallint not null check (row_number between 2 and 4),
   seat_letter text not null check (seat_letter in ('A', 'B', 'C', 'D')),
   guest_name text not null,
   guest_email text not null,
