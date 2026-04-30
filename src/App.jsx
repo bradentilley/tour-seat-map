@@ -284,13 +284,16 @@ function BusView({ tour, bookings, activeBus, setActiveBus, onBack, onSeatClick 
 function TourList({ tours, onSelectTour, onCreateTour, onToggleBus2 }) {
   const [newName, setNewName]   = useState('');
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   async function handleCreate(e) {
     e.preventDefault();
     if (!newName.trim() || creating) return;
     setCreating(true);
-    await onCreateTour(newName.trim());
-    setNewName('');
+    setCreateError('');
+    const err = await onCreateTour(newName.trim());
+    if (err) setCreateError(err);
+    else setNewName('');
     setCreating(false);
   }
 
@@ -301,6 +304,11 @@ function TourList({ tours, onSelectTour, onCreateTour, onToggleBus2 }) {
         <div style={{ fontSize: '0.58rem', color: '#6b7280', letterSpacing: '2px', textTransform: 'uppercase' }}>Premium Front Seat Bookings</div>
       </div>
 
+      {createError && (
+        <div style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: '0.67rem', color: '#f87171', marginBottom: 12, lineHeight: 1.5, wordBreak: 'break-all' }}>
+          {createError}
+        </div>
+      )}
       <form onSubmit={handleCreate} style={{ display: 'flex', gap: 10, marginBottom: 28 }}>
         <input value={newName} onChange={e => setNewName(e.target.value)}
           placeholder="Tour name (e.g. Israel June 2027)"
@@ -385,7 +393,7 @@ export default function App() {
 
   async function handleCreateTour(name) {
     const { data, error } = await supabase.from('tours').insert({ name }).select().single();
-    if (error) { console.error('Create tour failed:', error); return; }
+    if (error) return `${error.message} (code: ${error.code})`;
     if (data) setTours(prev => [...prev, data]);
   }
 
