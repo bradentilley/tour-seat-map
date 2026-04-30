@@ -35,18 +35,19 @@ function Seat({ row, col, booking, onClick }) {
       onClick={() => onClick({ row, col, booking })}
       style={{
         width: 46, height: 46, borderRadius: 7, cursor: 'pointer',
-        background: isBooked ? `${tier.color}20` : tier.bg,
+        background: isBooked ? tier.color : tier.bg,
         border: `1.5px solid ${isBooked ? tier.color : tier.color + '50'}`,
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: 2,
+        alignItems: 'center', justifyContent: 'center', gap: 1,
         transition: 'all 0.12s',
-        boxShadow: isBooked ? `0 0 0 1px ${tier.color}30` : 'none',
+        boxShadow: isBooked ? `0 0 10px ${tier.color}55` : 'none',
+        position: 'relative',
       }}>
-      <div style={{ fontSize: '0.42rem', color: isBooked ? tier.color : tier.color + 'aa', fontWeight: 600, letterSpacing: '0.5px' }}>
+      <div style={{ fontSize: '0.38rem', color: isBooked ? 'rgba(0,0,0,0.55)' : tier.color + 'aa', fontWeight: 600, letterSpacing: '0.5px' }}>
         {row}{col}
       </div>
       {isBooked ? (
-        <div style={{ fontSize: '0.38rem', color: tier.color, fontWeight: 700, maxWidth: 38, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center', padding: '0 2px' }}>
+        <div style={{ fontSize: '0.38rem', color: 'rgba(0,0,0,0.75)', fontWeight: 800, maxWidth: 40, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center', padding: '0 2px' }}>
           {booking.guest_name.split(' ')[0]}
         </div>
       ) : (
